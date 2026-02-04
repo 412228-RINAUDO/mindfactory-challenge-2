@@ -167,8 +167,8 @@ src/
 ├── config/
 │   ├── database.config.ts
 │   └── app.config.ts
-├── modules/
-│   └── [module-name]/
+├── entities/
+│   └── [entity-name]/
 │       ├── controllers/
 │       │   ├── [name].controller.ts
 │       │   └── [name].controller.spec.ts
