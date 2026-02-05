@@ -6,9 +6,9 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { VinculoSujetoObjeto } from '../../vinculos/entities/vinculo-sujeto-objeto.entity';
+import { VinculoSujetoObjeto } from '../../vinculos/entities/vinculo-sujeto-objeto.entity.js';
 
-@Entity('Sujeto')
+@Entity('sujeto')
 export class Sujeto {
   @PrimaryGeneratedColumn({ name: 'spo_id', type: 'bigint' })
   id: number;
@@ -25,6 +25,6 @@ export class Sujeto {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 
-  @OneToMany(() => VinculoSujetoObjeto, (vinculo) => vinculo.sujeto)
+  @OneToMany(() => VinculoSujetoObjeto, (vinculo: VinculoSujetoObjeto) => vinculo.sujeto)
   vinculos: VinculoSujetoObjeto[];
 }

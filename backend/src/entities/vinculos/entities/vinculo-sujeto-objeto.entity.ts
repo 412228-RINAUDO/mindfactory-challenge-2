@@ -7,10 +7,10 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity';
-import { Sujeto } from '../../sujetos/entities/sujeto.entity';
+import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity.js';
+import { Sujeto } from '../../sujetos/entities/sujeto.entity.js';
 
-@Entity('Vinculo_Sujeto_Objeto')
+@Entity('vinculo_sujeto_objeto')
 @Index('idx_vso_ovp', ['ovpId'])
 @Index('idx_vso_spo', ['spoId'])
 export class VinculoSujetoObjeto {

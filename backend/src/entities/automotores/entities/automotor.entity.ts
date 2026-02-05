@@ -8,9 +8,9 @@ import {
   Index,
   Check,
 } from 'typeorm';
-import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity';
+import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity.js';
 
-@Entity('Automotores')
+@Entity('automotores')
 @Check('chk_atr_fecha_fabricacion', '"atr_fecha_fabricacion" BETWEEN 190001 AND 299912')
 export class Automotor {
   @PrimaryGeneratedColumn({ name: 'atr_id', type: 'bigint' })

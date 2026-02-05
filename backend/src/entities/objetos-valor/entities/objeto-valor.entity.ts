@@ -7,10 +7,10 @@ import {
   OneToOne,
   OneToMany,
 } from 'typeorm';
-import { Automotor } from '../../automotores/entities/automotor.entity';
-import { VinculoSujetoObjeto } from '../../vinculos/entities/vinculo-sujeto-objeto.entity';
+import { Automotor } from '../../automotores/entities/automotor.entity.js';
+import { VinculoSujetoObjeto } from '../../vinculos/entities/vinculo-sujeto-objeto.entity.js';
 
-@Entity('Objeto_De_Valor')
+@Entity('objeto_de_valor')
 export class ObjetoDeValor {
   @PrimaryGeneratedColumn({ name: 'ovp_id', type: 'bigint' })
   id: number;
