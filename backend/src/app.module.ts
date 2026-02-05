@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AutomotoresModule } from './entities/automotores/automotores.module';
+import { ObjetosValorModule } from './entities/objetos-valor/objetos-valor.module';
+import { SujetosModule } from './entities/sujetos/sujetos.module';
+import { VinculosModule } from './entities/vinculos/vinculos.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '../.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -26,8 +29,10 @@ import { AppService } from './app.service';
         migrations: ['dist/database/migrations/*.js'],
       }),
     }),
+    ObjetosValorModule,
+    SujetosModule,
+    VinculosModule,
+    AutomotoresModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
