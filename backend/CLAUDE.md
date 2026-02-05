@@ -13,6 +13,38 @@
 
 ## ⛔ CRITICAL DEVELOPMENT RULES
 
+### 📜 FOLLOW XML BUSINESS RULES STRICTLY
+
+**NEVER invent or assume business rules. Always follow the XML specification from `CHALLENGE.md` exactly.**
+
+This project migrates an Oracle Forms application. All business logic, validations, and data relationships are defined in:
+- `alta_automotor.xml` - Form triggers and PL/SQL procedures
+- `schema_automotor.sql` - Database schema, constraints, and views
+
+Before implementing any feature:
+1. **Read the XML/SQL** to understand the exact business rule
+2. **Replicate the logic** as specified, not as you think it should be
+3. **Do not add** validations or conditions not present in the source
+4. **Do not remove** validations or conditions present in the source
+
+**Exception: Frontend requirements take priority.** If the frontend needs additional fields in a response (e.g., for display in a list), add them even if the XML doesn't include them. The XML defines business logic, but the API should serve the frontend's data needs.
+
+```typescript
+// ❌ INCORRECT - Assuming business logic
+const currentOwner = vinculos.find(v => v.fechaFin === null);
+
+// ✅ CORRECT - Following XML/SQL specification exactly
+// From: vw_automotores_con_dueno view
+// WHERE vso_responsable = 'S' AND vso_fecha_fin IS NULL
+const currentOwner = vinculos.find(
+  v => v.responsable === 'S' && v.fechaFin === null
+);
+```
+
+**When in doubt, ask or check the source XML/SQL.**
+
+---
+
 ### 🚫 USAGE OF `any` IS FORBIDDEN
 
 **NEVER, UNDER ANY CIRCUMSTANCES, USE THE `any` TYPE.**
@@ -206,6 +238,40 @@ src/
 | `*.dto.ts` | Input/output validation |
 | `*.spec.ts` | Unit test for the file |
 
+### Avoid Redundancy: DTOs vs Interfaces
+
+**Do NOT create interfaces that duplicate DTOs.** If a DTO already defines a structure, use it directly.
+
+```typescript
+// ❌ INCORRECT - Redundant interface
+interface AutomotorListItem {
+  dominio: string;
+  cuit: string | null;
+}
+
+// In repository
+async findAll(): Promise<AutomotorListItem[]>
+
+// ✅ CORRECT - Use DTO directly
+import { AutomotorListResponseDto } from '../dto/automotor-list-response.dto';
+
+async findAll(): Promise<AutomotorListResponseDto[]>
+```
+
+**Exception:** Create a separate interface when the shape differs (e.g., raw query results with flat fields vs DTOs with nested objects).
+
+```typescript
+// This is OK - different shapes
+export interface AutomotorDetailRaw {
+  duenoId: number | null;      // Flat from SQL JOIN
+  duenoCuit: string | null;
+}
+
+export class AutomotorDetailResponseDto {
+  duenoActual: DuenoResponseDto | null;  // Nested object
+}
+```
+
 ---
 
 ## 🧪 Test Location: Co-located
@@ -232,6 +298,86 @@ users/
 └── __tests__/
     └── users.service.spec.ts
 ```
+
+---
+
+## 🧪 E2E Testing with Testcontainers
+
+E2E tests use **Testcontainers** to spin up a real PostgreSQL database in Docker. This ensures tests run against the same database as production.
+
+### Structure
+
+```
+test/
+├── setup-e2e.ts                    # Starts PostgreSQL container (runs once)
+├── jest-e2e.json                   # Jest config with setupFilesAfterEnv
+├── helpers/
+│   └── factories/                  # Test data factories
+│       ├── index.ts                # Exports all factories
+│       ├── sujeto.factory.ts
+│       ├── automotor.factory.ts
+│       └── vinculo.factory.ts
+└── [domain].e2e-spec.ts            # E2E test files
+```
+
+### Factory Pattern
+
+Each test creates **only the data it needs** using factories. This keeps tests isolated and self-documenting.
+
+```typescript
+// test/helpers/factories/sujeto.factory.ts
+export async function createSujeto(
+  dataSource: DataSource,
+  options: CreateSujetoOptions = {},
+): Promise<Sujeto> {
+  const repo = dataSource.getRepository(Sujeto);
+  return repo.save({
+    cuit: options.cuit ?? generateUniqueCuit(),
+    denominacion: options.denominacion ?? 'Test Sujeto',
+  });
+}
+```
+
+### Writing E2E Tests
+
+```typescript
+// test/automotor.e2e-spec.ts
+import { createAutomotor, createSujeto, createVinculo } from './helpers/factories';
+
+describe('AutomotorController (e2e)', () => {
+  let dataSource: DataSource;
+
+  beforeAll(async () => {
+    // Setup module with TypeOrmModule.forRoot() using getTestDbConfig()
+    dataSource = moduleFixture.get(DataSource);
+  });
+
+  it('should return vehicle with owner', async () => {
+    // Each test creates its own data
+    const sujeto = await createSujeto(dataSource, { cuit: '20123456789' });
+    const auto = await createAutomotor(dataSource, { dominio: 'AA123BB' });
+    await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: sujeto.id });
+
+    const response = await request(server).get('/automotores/AA123BB').expect(200);
+    expect(response.body.duenoActual.cuit).toBe('20123456789');
+  });
+});
+```
+
+### Adding Factories for New Domains
+
+1. Create `test/helpers/factories/[entity].factory.ts`
+2. Export from `test/helpers/factories/index.ts`
+3. Use in your E2E tests
+
+### Running E2E Tests
+
+```bash
+pnpm test:e2e                           # Run all E2E tests
+pnpm test:e2e -- test/automotor.e2e-spec.ts  # Run specific file
+```
+
+**Requirements:** Docker must be running (Testcontainers needs it).
 
 ---
 
@@ -385,6 +531,30 @@ This applies to:
 - JSDoc comments (`/** */`)
 - TODO/FIXME comments
 - Swagger descriptions
+
+### Variables and Constants Language
+
+**All variables, constants, and local identifiers MUST be in English.**
+
+Domain terms from entities/DTOs (ubiquitous language) are accessed via their property names, but any new variable you create must be in English.
+
+```typescript
+// ✅ CORRECT - English variables, accessing Spanish domain properties
+const currentOwner = automotor.objetoDeValor?.vinculos?.[0]?.sujeto;
+const vehicleCount = automotores.length;
+const isActive = vinculo.fechaFin === null;
+
+// ❌ INCORRECT - Spanish variables
+const duenoActual = automotor.objetoDeValor?.vinculos?.[0]?.sujeto;
+const cantidadVehiculos = automotores.length;
+const estaActivo = vinculo.fechaFin === null;
+```
+
+This applies to:
+- Local variables (`const`, `let`)
+- Function parameters (except when matching DTO/entity properties)
+- Loop variables
+- Destructured aliases
 
 ### Strict Typing
 
