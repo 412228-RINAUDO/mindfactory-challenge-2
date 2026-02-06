@@ -17,13 +17,13 @@ Sistema de gestión de automotores con asignación de dueños por CUIT.
 ### Paso 1: Clonar el repositorio
 
 ```bash
-git clone https://github.com/usuario/automotores-challenge.git
+git clone https://github.com/412228-RINAUDO/mindfactory-challenge-2.git
 ```
 
 ### Paso 2: Entrar al proyecto
 
 ```bash
-cd automotores-challenge
+cd mindfactory-challenge-2
 ```
 
 ### Paso 3: Levantar los servicios
