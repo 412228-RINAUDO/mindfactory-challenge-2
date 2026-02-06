@@ -155,7 +155,7 @@ Permitido usar **ChatGPT** u otros, siempre que documentes en `docs/IA_ACELERADO
 - [x] `DELETE /api/automotores/:dominio` elimina en cascada.
 - [ ] Angular funciona: listar, crear, editar, eliminar; validaciones client-side.
 - [x] Tests: validadores.
-- [ ] Git: **≥2 PRs** con descripción y decisiones; commits claros.
+- [x] Git: **≥2 PRs** con descripción y decisiones; commits claros.
 - [ ] Docs: `docs/DECISION_LOG.md`, `docs/ESCALABILIDAD.md`, `docs/IA_ACELERADORES.md`.
 
 ---
