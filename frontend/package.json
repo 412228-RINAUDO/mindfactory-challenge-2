@@ -32,6 +32,13 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.4.2",
     "typescript": "~5.7.2"
+  },
+  "lint-staged": {
+    "*.{ts,html}": [
+      "prettier --write"
+    ]
   }
 }
