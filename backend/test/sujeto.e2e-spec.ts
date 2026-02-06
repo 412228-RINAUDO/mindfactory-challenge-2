@@ -11,6 +11,8 @@ import { Automotor } from '../src/modules/automotores/entities/automotor.entity'
 import { ObjetoDeValor } from '../src/modules/objetos-valor/entities/objeto-valor.entity';
 import { Sujeto } from '../src/modules/sujetos/entities/sujeto.entity';
 import { VinculoSujetoObjeto } from '../src/modules/vinculos/entities/vinculo-sujeto-objeto.entity';
+import { SujetoResponseDto } from '../src/modules/sujetos/dto/sujeto-response.dto';
+import { ErrorResponseDto } from '../src/common/dto/error-response.dto';
 import { createSujeto, clearAllTables } from './helpers/factories';
 
 describe('SujetoController (e2e)', () => {
@@ -75,13 +77,14 @@ describe('SujetoController (e2e)', () => {
         .query({ cuit: '20123456786' })
         .expect(200);
 
-      expect(response.body).toMatchObject({
+      const body = response.body as SujetoResponseDto;
+      expect(body).toMatchObject({
         id: sujeto.id,
         cuit: '20123456786',
         denominacion: 'Test Sujeto',
       });
-      expect(response.body.createdAt).toBeDefined();
-      expect(response.body.updatedAt).toBeDefined();
+      expect(body.createdAt).toBeDefined();
+      expect(body.updatedAt).toBeDefined();
     });
 
     it('should return 404 when sujeto not found', async () => {
@@ -90,7 +93,8 @@ describe('SujetoController (e2e)', () => {
         .query({ cuit: '20999999999' })
         .expect(404);
 
-      expect(response.body).toMatchObject({
+      const body = response.body as ErrorResponseDto;
+      expect(body).toMatchObject({
         statusCode: 404,
         errorCode: 'SUJETO_NOT_FOUND',
       });
@@ -111,13 +115,14 @@ describe('SujetoController (e2e)', () => {
         })
         .expect(201);
 
-      expect(response.body).toMatchObject({
+      const body = response.body as SujetoResponseDto;
+      expect(body).toMatchObject({
         cuit: '20123456786',
         denominacion: 'New Sujeto',
       });
-      expect(response.body.id).toBeDefined();
-      expect(response.body.createdAt).toBeDefined();
-      expect(response.body.updatedAt).toBeDefined();
+      expect(body.id).toBeDefined();
+      expect(body.createdAt).toBeDefined();
+      expect(body.updatedAt).toBeDefined();
     });
 
     it('should return 422 when CUIT already exists', async () => {
@@ -134,7 +139,8 @@ describe('SujetoController (e2e)', () => {
         })
         .expect(422);
 
-      expect(response.body).toMatchObject({
+      const body = response.body as ErrorResponseDto;
+      expect(body).toMatchObject({
         statusCode: 422,
         errorCode: 'CUIT_ALREADY_EXISTS',
       });
@@ -149,7 +155,8 @@ describe('SujetoController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.statusCode).toBe(400);
+      const body = response.body as ErrorResponseDto;
+      expect(body.statusCode).toBe(400);
     });
 
     it('should return 400 when denominacion is empty', async () => {
@@ -161,7 +168,8 @@ describe('SujetoController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.statusCode).toBe(400);
+      const body = response.body as ErrorResponseDto;
+      expect(body.statusCode).toBe(400);
     });
 
     it('should return 400 when denominacion exceeds max length', async () => {
@@ -173,7 +181,8 @@ describe('SujetoController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.statusCode).toBe(400);
+      const body = response.body as ErrorResponseDto;
+      expect(body.statusCode).toBe(400);
     });
   });
 });

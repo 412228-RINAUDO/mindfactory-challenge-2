@@ -8,6 +8,8 @@ import { AutomotoresModule } from '../src/modules/automotores/automotores.module
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 import { getTestDbConfig } from './setup-e2e';
 import { AutomotorListResponseDto } from '../src/modules/automotores/dto/automotor-list-response.dto';
+import { AutomotorDetailResponseDto } from '../src/modules/automotores/dto/automotor-detail-response.dto';
+import { ErrorResponseDto } from '../src/common/dto/error-response.dto';
 import { Automotor } from '../src/modules/automotores/entities/automotor.entity';
 import { ObjetoDeValor } from '../src/modules/objetos-valor/entities/objeto-valor.entity';
 import { Sujeto } from '../src/modules/sujetos/entities/sujeto.entity';
@@ -198,7 +200,7 @@ describe('AutomotorController (e2e)', () => {
     });
 
     it('should create a new vehicle with owner', async () => {
-      const sujeto = await createSujeto(dataSource, {
+      await createSujeto(dataSource, {
         cuit: '20123456786',
         denominacion: 'New Owner',
       });
@@ -257,7 +259,8 @@ describe('AutomotorController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.statusCode).toBe(400);
+      const body = response.body as ErrorResponseDto;
+      expect(body.statusCode).toBe(400);
     });
 
     it('should return 400 for invalid CUIT', async () => {
@@ -270,7 +273,8 @@ describe('AutomotorController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.statusCode).toBe(400);
+      const body = response.body as ErrorResponseDto;
+      expect(body.statusCode).toBe(400);
     });
   });
 
@@ -304,7 +308,7 @@ describe('AutomotorController (e2e)', () => {
         cuit: '20123456786',
         denominacion: 'Old Owner',
       });
-      const newOwner = await createSujeto(dataSource, {
+      await createSujeto(dataSource, {
         cuit: '27123456780',
         denominacion: 'New Owner',
       });
@@ -318,7 +322,8 @@ describe('AutomotorController (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.duenoActual).toMatchObject({
+      const body = response.body as AutomotorDetailResponseDto;
+      expect(body.duenoActual).toMatchObject({
         cuit: '27123456780',
         denominacion: 'New Owner',
       });
@@ -415,7 +420,8 @@ describe('AutomotorController (e2e)', () => {
 
       const response = await request(server).get('/automotores/DE001AA').expect(200);
 
-      expect(response.body).toMatchObject({
+      const body = response.body as AutomotorDetailResponseDto;
+      expect(body).toMatchObject({
         dominio: 'DE001AA',
         numeroChasis: 'CHASIS123',
         numeroMotor: 'MOTOR123',
@@ -427,8 +433,8 @@ describe('AutomotorController (e2e)', () => {
           porcentaje: '100.00',
         },
       });
-      expect(response.body.id).toBeDefined();
-      expect(response.body.fechaAltaRegistro).toBeDefined();
+      expect(body.id).toBeDefined();
+      expect(body.fechaAltaRegistro).toBeDefined();
     });
 
     it('should return vehicle without owner when no active vinculo exists', async () => {
