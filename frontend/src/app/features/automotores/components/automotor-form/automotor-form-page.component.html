@@ -1,0 +1,34 @@
+<div class="p-4">
+  <div class="flex items-center gap-2 mb-4">
+    <p-button
+      icon="pi pi-arrow-left"
+      [rounded]="true"
+      [text]="true"
+      (onClick)="goBack()"
+    />
+    <h1 class="text-2xl font-bold">
+      {{ isEditMode() ? "Editar Automotor" : "Nuevo Automotor" }}
+    </h1>
+  </div>
+
+  <div class="max-w-xl">
+    <app-automotor-form
+      [automotor]="automotorState.selectedAutomotor()"
+      [isEditMode]="isEditMode()"
+      [loading]="loading()"
+      [denominacionDueno]="denominacionDueno()"
+      [loadingDueno]="loadingDueno()"
+      (submitted)="onSubmit($event)"
+      (cancelled)="goBack()"
+      (cuitValidated)="onCuitValidated($event)"
+    />
+  </div>
+
+  <app-sujeto-dialog
+    [(visible)]="showSujetoDialog"
+    [cuit]="pendingCuit()"
+    [loading]="creatingCuit()"
+    (created)="onSujetoCreated($event)"
+    (cancelled)="onSujetoDialogCancelled()"
+  />
+</div>
