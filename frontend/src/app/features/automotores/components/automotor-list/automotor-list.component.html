@@ -1,0 +1,53 @@
+<p-table
+  [value]="automotores()"
+  [loading]="loading()"
+  [paginator]="true"
+  [rows]="10"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+  [stripedRows]="true"
+>
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="dominio">Dominio <p-sortIcon field="dominio" /></th>
+      <th pSortableColumn="dueno">Dueño <p-sortIcon field="dueno" /></th>
+      <th pSortableColumn="cuit">CUIT <p-sortIcon field="cuit" /></th>
+      <th pSortableColumn="fechaFabricacion">
+        Fecha Fabricación <p-sortIcon field="fechaFabricacion" />
+      </th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-automotor>
+    <tr>
+      <td>{{ automotor.dominio }}</td>
+      <td>{{ automotor.dueno ?? "-" }}</td>
+      <td>{{ automotor.cuit ?? "-" }}</td>
+      <td>{{ formatFechaFabricacion(automotor.fechaFabricacion) }}</td>
+      <td>
+        <p-button
+          icon="pi pi-pencil"
+          [rounded]="true"
+          [text]="true"
+          severity="info"
+          (onClick)="edit.emit(automotor)"
+          pTooltip="Editar"
+        />
+        <p-button
+          icon="pi pi-trash"
+          [rounded]="true"
+          [text]="true"
+          severity="danger"
+          (onClick)="delete.emit(automotor)"
+          pTooltip="Eliminar"
+        />
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="5" class="text-center p-4">No se encontraron automotores</td>
+    </tr>
+  </ng-template>
+</p-table>

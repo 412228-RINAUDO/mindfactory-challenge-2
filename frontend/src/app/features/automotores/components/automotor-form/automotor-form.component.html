@@ -1,0 +1,124 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <input
+        pInputText
+        id="dominio"
+        formControlName="dominio"
+        [readonly]="isEditMode()"
+        [invalid]="isInvalid('dominio')"
+        class="w-full uppercase"
+      />
+      <label for="dominio">Dominio *</label>
+    </p-floatlabel>
+    @if (isInvalid("dominio")) {
+      <p-message severity="error" variant="simple" size="small">
+        {{ getErrorMessage("dominio") }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <input
+        pInputText
+        id="numeroChasis"
+        formControlName="numeroChasis"
+        class="w-full"
+      />
+      <label for="numeroChasis">Número de Chasis</label>
+    </p-floatlabel>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <input
+        pInputText
+        id="numeroMotor"
+        formControlName="numeroMotor"
+        class="w-full"
+      />
+      <label for="numeroMotor">Número de Motor</label>
+    </p-floatlabel>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <input pInputText id="color" formControlName="color" class="w-full" />
+      <label for="color">Color</label>
+    </p-floatlabel>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <p-inputmask
+        id="fechaFabricacion"
+        formControlName="fechaFabricacion"
+        mask="999999"
+        placeholder="AAAAMM"
+        [invalid]="isInvalid('fechaFabricacion')"
+      />
+      <label for="fechaFabricacion">Fecha de Fabricación *</label>
+    </p-floatlabel>
+    @if (isInvalid("fechaFabricacion")) {
+      <p-message severity="error" variant="simple" size="small">
+        {{ getErrorMessage("fechaFabricacion") }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <p-inputmask
+        id="cuitDueno"
+        formControlName="cuitDueno"
+        mask="99-99999999-9"
+        placeholder="99-99999999-9"
+        [invalid]="isInvalid('cuitDueno')"
+        (onBlur)="onCuitBlur()"
+      />
+      <label for="cuitDueno">CUIT Dueño *</label>
+    </p-floatlabel>
+    @if (isInvalid("cuitDueno")) {
+      <p-message severity="error" variant="simple" size="small">
+        {{ getErrorMessage("cuitDueno") }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <p-floatlabel variant="on">
+      <div class="relative w-full">
+        <input
+          pInputText
+          id="denominacionDueno"
+          [value]="denominacionDueno() ?? ''"
+          readonly
+          class="w-full bg-gray-100"
+        />
+        @if (loadingDueno()) {
+          <p-progressSpinner
+            styleClass="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+            strokeWidth="4"
+          />
+        }
+      </div>
+      <label for="denominacionDueno">Nombre del Dueño</label>
+    </p-floatlabel>
+  </div>
+
+  <div class="flex gap-2 justify-end mt-4">
+    <p-button
+      label="Cancelar"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelled.emit()"
+    />
+    <p-button
+      type="submit"
+      [label]="isEditMode() ? 'Actualizar' : 'Crear'"
+      [loading]="loading()"
+      [disabled]="form.invalid"
+    />
+  </div>
+</form>
