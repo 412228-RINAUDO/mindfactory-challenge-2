@@ -7,14 +7,7 @@ import { Automotor } from '../../modules/automotores/entities/automotor.entity';
 import { VinculoSujetoObjeto } from '../../modules/vinculos/entities/vinculo-sujeto-objeto.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Sujeto,
-      ObjetoDeValor,
-      Automotor,
-      VinculoSujetoObjeto,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Sujeto, ObjetoDeValor, Automotor, VinculoSujetoObjeto])],
   providers: [SeedService],
   exports: [SeedService],
 })
