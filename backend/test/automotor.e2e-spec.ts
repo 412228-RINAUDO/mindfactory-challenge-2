@@ -393,4 +393,66 @@ describe('AutomotorController (e2e)', () => {
       });
     });
   });
+
+  describe('GET /automotores/:dominio', () => {
+    beforeEach(async () => {
+      await clearAllTables(dataSource);
+    });
+
+    it('should return vehicle detail with owner', async () => {
+      const sujeto = await createSujeto(dataSource, {
+        cuit: '20123456786',
+        denominacion: 'Test Owner',
+      });
+      const auto = await createAutomotor(dataSource, {
+        dominio: 'DE001AA',
+        fechaFabricacion: 202401,
+        numeroChasis: 'CHASIS123',
+        numeroMotor: 'MOTOR123',
+        color: 'Rojo',
+      });
+      await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: sujeto.id });
+
+      const response = await request(server).get('/automotores/DE001AA').expect(200);
+
+      expect(response.body).toMatchObject({
+        dominio: 'DE001AA',
+        numeroChasis: 'CHASIS123',
+        numeroMotor: 'MOTOR123',
+        color: 'Rojo',
+        fechaFabricacion: 202401,
+        duenoActual: {
+          cuit: '20123456786',
+          denominacion: 'Test Owner',
+          porcentaje: '100.00',
+        },
+      });
+      expect(response.body.id).toBeDefined();
+      expect(response.body.fechaAltaRegistro).toBeDefined();
+    });
+
+    it('should return vehicle without owner when no active vinculo exists', async () => {
+      await createAutomotor(dataSource, {
+        dominio: 'NO001OW',
+        fechaFabricacion: 202401,
+      });
+
+      const response = await request(server).get('/automotores/NO001OW').expect(200);
+
+      expect(response.body).toMatchObject({
+        dominio: 'NO001OW',
+        fechaFabricacion: 202401,
+        duenoActual: null,
+      });
+    });
+
+    it('should return 404 when vehicle does not exist', async () => {
+      const response = await request(server).get('/automotores/NOTEXIST').expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        errorCode: 'AUTOMOTOR_NOT_FOUND',
+      });
+    });
+  });
 });

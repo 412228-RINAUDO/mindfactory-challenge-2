@@ -27,7 +27,7 @@ export class AutomotorService {
     return this.automotorRepository.findAll();
   }
 
-  private async getDetailByDominio(dominio: string): Promise<AutomotorDetailResponseDto> {
+  async findByDominio(dominio: string): Promise<AutomotorDetailResponseDto> {
     const data = await this.automotorRepository.findByDominio(dominio);
 
     if (!data) {
@@ -73,7 +73,7 @@ export class AutomotorService {
     });
 
     // 3. Return full detail
-    return this.getDetailByDominio(dto.dominio);
+    return this.findByDominio(dto.dominio);
   }
 
   async update(dominio: string, dto: UpdateAutomotorDto): Promise<AutomotorDetailResponseDto> {
@@ -121,7 +121,7 @@ export class AutomotorService {
     });
 
     // 4. Return updated detail
-    return this.getDetailByDominio(dominio);
+    return this.findByDominio(dominio);
   }
 
   async delete(dominio: string): Promise<void> {
