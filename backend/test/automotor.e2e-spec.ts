@@ -7,7 +7,6 @@ import { DataSource } from 'typeorm';
 import { AutomotoresModule } from '../src/modules/automotores/automotores.module';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 import { getTestDbConfig } from './setup-e2e';
-import { AutomotorDetailResponseDto } from '../src/modules/automotores/dto/automotor-detail-response.dto';
 import { AutomotorListResponseDto } from '../src/modules/automotores/dto/automotor-list-response.dto';
 import { Automotor } from '../src/modules/automotores/entities/automotor.entity';
 import { ObjetoDeValor } from '../src/modules/objetos-valor/entities/objeto-valor.entity';
@@ -67,15 +66,25 @@ describe('AutomotorController (e2e)', () => {
     });
 
     it('should return a list of vehicles ordered by dominio', async () => {
-      await createAutomotor(dataSource, { dominio: 'ZZ001AA' });
-      await createAutomotor(dataSource, { dominio: 'AA001ZZ' });
+      await createAutomotor(dataSource, { dominio: 'ZZ001AA', fechaFabricacion: 202301 });
+      await createAutomotor(dataSource, { dominio: 'AA001ZZ', fechaFabricacion: 202402 });
 
       const response = await request(server).get('/automotores').expect(200);
       const body = response.body as AutomotorListResponseDto[];
 
       expect(body).toHaveLength(2);
-      expect(body[0].dominio).toBe('AA001ZZ');
-      expect(body[1].dominio).toBe('ZZ001AA');
+      expect(body[0]).toEqual({
+        dominio: 'AA001ZZ',
+        fechaFabricacion: 202402,
+        cuit: null,
+        dueno: null,
+      });
+      expect(body[1]).toEqual({
+        dominio: 'ZZ001AA',
+        fechaFabricacion: 202301,
+        cuit: null,
+        dueno: null,
+      });
     });
 
     it('should return vehicle with current responsible owner', async () => {
@@ -83,7 +92,10 @@ describe('AutomotorController (e2e)', () => {
         cuit: '20999999901',
         denominacion: 'Owner Test 1',
       });
-      const auto = await createAutomotor(dataSource, { dominio: 'OW001AA' });
+      const auto = await createAutomotor(dataSource, {
+        dominio: 'OW001AA',
+        fechaFabricacion: 202401,
+      });
       await createVinculo(dataSource, {
         ovpId: auto.ovpId,
         spoId: sujeto.id,
@@ -93,7 +105,7 @@ describe('AutomotorController (e2e)', () => {
       const body = response.body as AutomotorListResponseDto[];
 
       expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({
+      expect(body[0]).toEqual({
         dominio: 'OW001AA',
         fechaFabricacion: 202401,
         cuit: '20999999901',
@@ -110,7 +122,10 @@ describe('AutomotorController (e2e)', () => {
         cuit: '20888888802',
         denominacion: 'Not Responsible',
       });
-      const auto = await createAutomotor(dataSource, { dominio: 'MU001AA' });
+      const auto = await createAutomotor(dataSource, {
+        dominio: 'MU001AA',
+        fechaFabricacion: 202401,
+      });
 
       await createVinculo(dataSource, {
         ovpId: auto.ovpId,
@@ -129,22 +144,24 @@ describe('AutomotorController (e2e)', () => {
       const body = response.body as AutomotorListResponseDto[];
 
       expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({
+      expect(body[0]).toEqual({
         dominio: 'MU001AA',
+        fechaFabricacion: 202401,
         cuit: '20888888801',
         dueno: 'Responsible Owner',
       });
     });
 
     it('should return null cuit/dueno for vehicles without owner', async () => {
-      await createAutomotor(dataSource, { dominio: 'NO001OW' });
+      await createAutomotor(dataSource, { dominio: 'NO001OW', fechaFabricacion: 202401 });
 
       const response = await request(server).get('/automotores').expect(200);
       const body = response.body as AutomotorListResponseDto[];
 
       expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({
+      expect(body[0]).toEqual({
         dominio: 'NO001OW',
+        fechaFabricacion: 202401,
         cuit: null,
         dueno: null,
       });
@@ -152,7 +169,10 @@ describe('AutomotorController (e2e)', () => {
 
     it('should return null cuit/dueno for vehicles with inactive owner (fechaFin set)', async () => {
       const sujeto = await createSujeto(dataSource, { cuit: '20777777701' });
-      const auto = await createAutomotor(dataSource, { dominio: 'IN001AC' });
+      const auto = await createAutomotor(dataSource, {
+        dominio: 'IN001AC',
+        fechaFabricacion: 202401,
+      });
       await createVinculo(dataSource, {
         ovpId: auto.ovpId,
         spoId: sujeto.id,
@@ -163,133 +183,12 @@ describe('AutomotorController (e2e)', () => {
       const body = response.body as AutomotorListResponseDto[];
 
       expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({
+      expect(body[0]).toEqual({
         dominio: 'IN001AC',
+        fechaFabricacion: 202401,
         cuit: null,
         dueno: null,
       });
-    });
-  });
-
-  describe('GET /automotores/:dominio', () => {
-    beforeEach(async () => {
-      await clearAllTables(dataSource);
-    });
-
-    it('should return vehicle details with current owner', async () => {
-      const sujeto = await createSujeto(dataSource, {
-        cuit: '20666666601',
-        denominacion: 'Detail Owner',
-      });
-      const auto = await createAutomotor(dataSource, {
-        dominio: 'DT001AA',
-        numeroChasis: 'CHASIS123',
-        numeroMotor: 'MOTOR456',
-        color: 'Rojo',
-        fechaFabricacion: 202401,
-      });
-      await createVinculo(dataSource, {
-        ovpId: auto.ovpId,
-        spoId: sujeto.id,
-        porcentaje: 100,
-      });
-
-      const response = await request(server).get('/automotores/DT001AA').expect(200);
-
-      expect(response.body).toMatchObject({
-        dominio: 'DT001AA',
-        numeroChasis: 'CHASIS123',
-        numeroMotor: 'MOTOR456',
-        color: 'Rojo',
-        fechaFabricacion: 202401,
-        duenoActual: {
-          cuit: '20666666601',
-          denominacion: 'Detail Owner',
-          porcentaje: '100.00',
-        },
-      });
-    });
-
-    it('should return vehicle with responsible owner only', async () => {
-      const responsible = await createSujeto(dataSource, {
-        cuit: '20555555501',
-        denominacion: 'Resp Detail',
-      });
-      const notResponsible = await createSujeto(dataSource, { cuit: '20555555502' });
-      const auto = await createAutomotor(dataSource, { dominio: 'RS001AA' });
-
-      await createVinculo(dataSource, {
-        ovpId: auto.ovpId,
-        spoId: responsible.id,
-        responsable: 'S',
-        porcentaje: 75,
-      });
-      await createVinculo(dataSource, {
-        ovpId: auto.ovpId,
-        spoId: notResponsible.id,
-        responsable: 'N',
-        porcentaje: 25,
-      });
-
-      const response = await request(server).get('/automotores/RS001AA').expect(200);
-      const body = response.body as AutomotorDetailResponseDto;
-
-      expect(body.duenoActual).toMatchObject({
-        cuit: '20555555501',
-        denominacion: 'Resp Detail',
-        porcentaje: '75.00',
-      });
-    });
-
-    it('should return null duenoActual for vehicle without owner', async () => {
-      await createAutomotor(dataSource, { dominio: 'NV001OW' });
-
-      const response = await request(server).get('/automotores/NV001OW').expect(200);
-      const body = response.body as AutomotorDetailResponseDto;
-
-      expect(body.dominio).toBe('NV001OW');
-      expect(body.duenoActual).toBeNull();
-    });
-
-    it('should return null duenoActual for vehicle with inactive owner', async () => {
-      const sujeto = await createSujeto(dataSource, { cuit: '20444444401' });
-      const auto = await createAutomotor(dataSource, { dominio: 'IV001AC' });
-      await createVinculo(dataSource, {
-        ovpId: auto.ovpId,
-        spoId: sujeto.id,
-        fechaFin: new Date('2024-01-01'),
-      });
-
-      const response = await request(server).get('/automotores/IV001AC').expect(200);
-      const body = response.body as AutomotorDetailResponseDto;
-
-      expect(body.dominio).toBe('IV001AC');
-      expect(body.duenoActual).toBeNull();
-    });
-
-    it('should return 404 when vehicle does not exist', async () => {
-      const response = await request(server).get('/automotores/NOTEXIST').expect(404);
-
-      expect(response.body).toMatchObject({
-        statusCode: 404,
-        errorCode: 'AUTOMOTOR_NOT_FOUND',
-      });
-    });
-
-    it('should return vehicle with null optional fields', async () => {
-      await createAutomotor(dataSource, {
-        dominio: 'NL001AA',
-        numeroChasis: null,
-        numeroMotor: null,
-        color: null,
-      });
-
-      const response = await request(server).get('/automotores/NL001AA').expect(200);
-      const body = response.body as AutomotorDetailResponseDto;
-
-      expect(body.numeroChasis).toBeNull();
-      expect(body.numeroMotor).toBeNull();
-      expect(body.color).toBeNull();
     });
   });
 
@@ -464,8 +363,9 @@ describe('AutomotorController (e2e)', () => {
 
       await request(server).delete('/automotores/DL001AA').expect(204);
 
-      // Verify it's deleted
-      await request(server).get('/automotores/DL001AA').expect(404);
+      // Verify it's deleted via list endpoint
+      const response = await request(server).get('/automotores').expect(200);
+      expect(response.body).toHaveLength(0);
     });
 
     it('should delete vehicle with owner (cascade)', async () => {
@@ -475,8 +375,9 @@ describe('AutomotorController (e2e)', () => {
 
       await request(server).delete('/automotores/DC001AA').expect(204);
 
-      // Verify vehicle is deleted
-      await request(server).get('/automotores/DC001AA').expect(404);
+      // Verify vehicle is deleted via list endpoint
+      const response = await request(server).get('/automotores').expect(200);
+      expect(response.body).toHaveLength(0);
 
       // Verify sujeto still exists
       const sujetos = await dataSource.getRepository(Sujeto).find();
@@ -484,9 +385,7 @@ describe('AutomotorController (e2e)', () => {
     });
 
     it('should return 404 when vehicle does not exist', async () => {
-      const response = await request(server)
-        .delete('/automotores/NOTEXIST')
-        .expect(404);
+      const response = await request(server).delete('/automotores/NOTEXIST').expect(404);
 
       expect(response.body).toMatchObject({
         statusCode: 404,
