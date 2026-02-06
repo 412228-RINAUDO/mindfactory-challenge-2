@@ -14,11 +14,7 @@ export class VinculoService {
     return this.vinculoRepository.closeCurrentOwner(ovpId, manager);
   }
 
-  async createOwnerLink(
-    ovpId: number,
-    spoId: number,
-    manager: EntityManager,
-  ): Promise<void> {
+  async createOwnerLink(ovpId: number, spoId: number, manager: EntityManager): Promise<void> {
     return this.vinculoRepository.createOwnerLink(
       {
         ovpId,
@@ -31,11 +27,7 @@ export class VinculoService {
     );
   }
 
-  async reassignOwner(
-    ovpId: number,
-    newOwnerId: number,
-    manager: EntityManager,
-  ): Promise<void> {
+  async reassignOwner(ovpId: number, newOwnerId: number, manager: EntityManager): Promise<void> {
     await this.closeCurrentOwner(ovpId, manager);
     await this.createOwnerLink(ovpId, newOwnerId, manager);
   }

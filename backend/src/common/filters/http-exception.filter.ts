@@ -49,14 +49,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      const message =
-        typeof exceptionResponse === 'string'
-          ? exceptionResponse
-          : ((exceptionResponse as { message?: string }).message ?? exception.message);
+
+      // Extract errorCode from response body if available, otherwise use default
+      let errorCode = this.getDefaultErrorCode(status);
+      let message = exception.message;
+
+      if (typeof exceptionResponse === 'string') {
+        message = exceptionResponse;
+      } else {
+        const responseObj = exceptionResponse as { message?: string; errorCode?: string };
+        message = responseObj.message ?? exception.message;
+        if (responseObj.errorCode) {
+          errorCode = responseObj.errorCode;
+        }
+      }
 
       return {
         statusCode: status,
-        errorCode: this.getDefaultErrorCode(status),
+        errorCode,
         message,
       };
     }

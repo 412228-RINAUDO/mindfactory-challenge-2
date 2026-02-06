@@ -9,6 +9,11 @@ import { SeedService } from './database/seed/seed.service';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: ['http://localhost:4200'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  });
+
   const seedService = app.get(SeedService);
   await seedService.run();
 

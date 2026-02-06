@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+cd backend && npx lint-staged && pnpm tsc --noEmit
+cd ../frontend && npx lint-staged

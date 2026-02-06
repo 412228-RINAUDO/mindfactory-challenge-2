@@ -17,15 +17,15 @@ export class IsCuitConstraint implements ValidatorConstraintInterface {
     // Module 11 algorithm from XML
     let sum = 0;
     for (let i = 0; i < 10; i++) {
-      const digit = parseInt(value[i]!, 10);
-      sum += digit * this.COEFFICIENTS[i]!;
+      const digit = parseInt(value[i], 10);
+      sum += digit * this.COEFFICIENTS[i];
     }
 
     let checkDigit = 11 - (sum % 11);
     if (checkDigit === 11) checkDigit = 0;
     if (checkDigit === 10) checkDigit = 9;
 
-    return checkDigit === parseInt(value[10]!, 10);
+    return checkDigit === parseInt(value[10], 10);
   }
 
   defaultMessage(): string {
@@ -33,11 +33,11 @@ export class IsCuitConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export function IsCuit(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
+export function IsCuit(validationOptions?: ValidationOptions): PropertyDecorator {
+  return function (object: object, propertyName: string | symbol): void {
     registerDecorator({
       target: object.constructor,
-      propertyName: propertyName,
+      propertyName: propertyName as string,
       options: validationOptions,
       constraints: [],
       validator: IsCuitConstraint,
