@@ -96,4 +96,84 @@ describe('SujetoController (e2e)', () => {
       });
     });
   });
+
+  describe('POST /sujetos', () => {
+    beforeEach(async () => {
+      await clearAllTables(dataSource);
+    });
+
+    it('should create a new sujeto', async () => {
+      const response = await request(server)
+        .post('/sujetos')
+        .send({
+          cuit: '20123456786',
+          denominacion: 'New Sujeto',
+        })
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        cuit: '20123456786',
+        denominacion: 'New Sujeto',
+      });
+      expect(response.body.id).toBeDefined();
+      expect(response.body.createdAt).toBeDefined();
+      expect(response.body.updatedAt).toBeDefined();
+    });
+
+    it('should return 422 when CUIT already exists', async () => {
+      await createSujeto(dataSource, {
+        cuit: '20123456786',
+        denominacion: 'Existing Sujeto',
+      });
+
+      const response = await request(server)
+        .post('/sujetos')
+        .send({
+          cuit: '20123456786',
+          denominacion: 'Another Sujeto',
+        })
+        .expect(422);
+
+      expect(response.body).toMatchObject({
+        statusCode: 422,
+        errorCode: 'CUIT_ALREADY_EXISTS',
+      });
+    });
+
+    it('should return 400 for invalid CUIT format', async () => {
+      const response = await request(server)
+        .post('/sujetos')
+        .send({
+          cuit: '12345678901',
+          denominacion: 'Invalid CUIT Sujeto',
+        })
+        .expect(400);
+
+      expect(response.body.statusCode).toBe(400);
+    });
+
+    it('should return 400 when denominacion is empty', async () => {
+      const response = await request(server)
+        .post('/sujetos')
+        .send({
+          cuit: '20123456786',
+          denominacion: '',
+        })
+        .expect(400);
+
+      expect(response.body.statusCode).toBe(400);
+    });
+
+    it('should return 400 when denominacion exceeds max length', async () => {
+      const response = await request(server)
+        .post('/sujetos')
+        .send({
+          cuit: '20123456786',
+          denominacion: 'A'.repeat(161),
+        })
+        .expect(400);
+
+      expect(response.body.statusCode).toBe(400);
+    });
+  });
 });

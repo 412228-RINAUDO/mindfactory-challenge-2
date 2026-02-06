@@ -4,6 +4,7 @@ export const ErrorCodes = {
 
   // Sujetos
   SUJETO_NOT_FOUND: 'SUJETO_NOT_FOUND',
+  CUIT_ALREADY_EXISTS: 'CUIT_ALREADY_EXISTS',
 
   // Generic
   VALIDATION_ERROR: 'VALIDATION_ERROR',

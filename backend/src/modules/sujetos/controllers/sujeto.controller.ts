@@ -1,7 +1,8 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SujetoService } from '../services/sujeto.service';
 import { SujetoResponseDto } from '../dto/sujeto-response.dto';
+import { CreateSujetoDto } from '../dto/create-sujeto.dto';
 import { ErrorResponseDto } from '../../../common/dto/error-response.dto';
 import { EntityNotFoundException } from '../../../common/exceptions/entity-not-found.exception';
 import { ErrorCodes } from '../../../common/constants/error-codes';
@@ -36,6 +37,28 @@ export class SujetoController {
         `Sujeto with CUIT ${cuit} not found`,
       );
     }
+    return new SujetoResponseDto(sujeto);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new sujeto' })
+  @ApiResponse({
+    status: 201,
+    description: 'Sujeto created successfully',
+    type: SujetoResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid CUIT format',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'CUIT already exists',
+    type: ErrorResponseDto,
+  })
+  async create(@Body() dto: CreateSujetoDto): Promise<SujetoResponseDto> {
+    const sujeto = await this.sujetoService.create(dto);
     return new SujetoResponseDto(sujeto);
   }
 }
