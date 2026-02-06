@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Automotor } from '../../../src/entities/automotores/entities/automotor.entity';
+import { Automotor } from '../../../src/modules/automotores/entities/automotor.entity';
 import { createObjetoDeValor } from './objeto-valor.factory';
 
 let automotorCounter = 0;

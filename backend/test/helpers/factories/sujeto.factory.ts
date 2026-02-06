@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Sujeto } from '../../../src/entities/sujetos/entities/sujeto.entity';
+import { Sujeto } from '../../../src/modules/sujetos/entities/sujeto.entity';
 
 let sujetoCounter = 0;
 

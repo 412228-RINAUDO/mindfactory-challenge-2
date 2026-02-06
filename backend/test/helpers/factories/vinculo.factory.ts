@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { VinculoSujetoObjeto } from '../../../src/entities/vinculos/entities/vinculo-sujeto-objeto.entity';
+import { VinculoSujetoObjeto } from '../../../src/modules/vinculos/entities/vinculo-sujeto-objeto.entity';
 
 export interface CreateVinculoOptions {
   ovpId: number;

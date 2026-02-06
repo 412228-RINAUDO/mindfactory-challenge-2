@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { ObjetoDeValor } from '../../../src/entities/objetos-valor/entities/objeto-valor.entity';
+import { ObjetoDeValor } from '../../../src/modules/objetos-valor/entities/objeto-valor.entity';
 
 let objetoCounter = 0;
 
