@@ -7,8 +7,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity.js';
-import { Sujeto } from '../../sujetos/entities/sujeto.entity.js';
+import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity';
+import { Sujeto } from '../../sujetos/entities/sujeto.entity';
 
 @Entity('vinculo_sujeto_objeto')
 @Index('idx_vso_ovp', ['ovpId'])

@@ -8,7 +8,7 @@ import {
   Index,
   Check,
 } from 'typeorm';
-import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity.js';
+import { ObjetoDeValor } from '../../objetos-valor/entities/objeto-valor.entity';
 
 @Entity('automotores')
 @Check('chk_atr_fecha_fabricacion', '"atr_fecha_fabricacion" BETWEEN 190001 AND 299912')
