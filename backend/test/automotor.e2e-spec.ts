@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import type { Server } from 'http';
 import { DataSource } from 'typeorm';
-import { AutomotoresModule } from '../src/entities/automotores/automotores.module';
+import { AutomotoresModule } from '../src/modules/automotores/automotores.module';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 import { getTestDbConfig } from './setup-e2e';
-import { AutomotorDetailResponseDto } from '../src/entities/automotores/dto/automotor-detail-response.dto';
-import { AutomotorListResponseDto } from '../src/entities/automotores/dto/automotor-list-response.dto';
-import { Automotor } from '../src/entities/automotores/entities/automotor.entity';
-import { ObjetoDeValor } from '../src/entities/objetos-valor/entities/objeto-valor.entity';
-import { Sujeto } from '../src/entities/sujetos/entities/sujeto.entity';
-import { VinculoSujetoObjeto } from '../src/entities/vinculos/entities/vinculo-sujeto-objeto.entity';
+import { AutomotorDetailResponseDto } from '../src/modules/automotores/dto/automotor-detail-response.dto';
+import { AutomotorListResponseDto } from '../src/modules/automotores/dto/automotor-list-response.dto';
+import { Automotor } from '../src/modules/automotores/entities/automotor.entity';
+import { ObjetoDeValor } from '../src/modules/objetos-valor/entities/objeto-valor.entity';
+import { Sujeto } from '../src/modules/sujetos/entities/sujeto.entity';
+import { VinculoSujetoObjeto } from '../src/modules/vinculos/entities/vinculo-sujeto-objeto.entity';
 import { createAutomotor, createSujeto, createVinculo, clearAllTables } from './helpers/factories';
 
 describe('AutomotorController (e2e)', () => {
@@ -41,6 +41,16 @@ describe('AutomotorController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    );
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
@@ -280,6 +290,208 @@ describe('AutomotorController (e2e)', () => {
       expect(body.numeroChasis).toBeNull();
       expect(body.numeroMotor).toBeNull();
       expect(body.color).toBeNull();
+    });
+  });
+
+  describe('POST /automotores', () => {
+    beforeEach(async () => {
+      await clearAllTables(dataSource);
+    });
+
+    it('should create a new vehicle with owner', async () => {
+      const sujeto = await createSujeto(dataSource, {
+        cuit: '20123456786',
+        denominacion: 'New Owner',
+      });
+
+      const response = await request(server)
+        .post('/automotores')
+        .send({
+          dominio: 'AA123BB',
+          numeroChasis: 'CHASIS999',
+          numeroMotor: 'MOTOR999',
+          color: 'Azul',
+          fechaFabricacion: 202401,
+          cuitDueno: '20123456786',
+        })
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        dominio: 'AA123BB',
+        numeroChasis: 'CHASIS999',
+        numeroMotor: 'MOTOR999',
+        color: 'Azul',
+        fechaFabricacion: 202401,
+        duenoActual: {
+          cuit: '20123456786',
+          denominacion: 'New Owner',
+          porcentaje: '100.00',
+        },
+      });
+    });
+
+    it('should return 404 when sujeto does not exist', async () => {
+      const response = await request(server)
+        .post('/automotores')
+        .send({
+          dominio: 'AA123BB',
+          fechaFabricacion: 202401,
+          cuitDueno: '20123456786',
+        })
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        errorCode: 'SUJETO_NOT_FOUND',
+      });
+    });
+
+    it('should return 400 for invalid dominio format', async () => {
+      await createSujeto(dataSource, { cuit: '20123456786' });
+
+      const response = await request(server)
+        .post('/automotores')
+        .send({
+          dominio: 'INVALID',
+          fechaFabricacion: 202401,
+          cuitDueno: '20123456786',
+        })
+        .expect(400);
+
+      expect(response.body.statusCode).toBe(400);
+    });
+
+    it('should return 400 for invalid CUIT', async () => {
+      const response = await request(server)
+        .post('/automotores')
+        .send({
+          dominio: 'AA123BB',
+          fechaFabricacion: 202401,
+          cuitDueno: '12345678901',
+        })
+        .expect(400);
+
+      expect(response.body.statusCode).toBe(400);
+    });
+  });
+
+  describe('PUT /automotores/:dominio', () => {
+    beforeEach(async () => {
+      await clearAllTables(dataSource);
+    });
+
+    it('should update vehicle fields', async () => {
+      const sujeto = await createSujeto(dataSource, { cuit: '20123456786' });
+      const auto = await createAutomotor(dataSource, { dominio: 'UP001AA' });
+      await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: sujeto.id });
+
+      const response = await request(server)
+        .put('/automotores/UP001AA')
+        .send({
+          color: 'Verde',
+          numeroChasis: 'NEWCHASIS',
+        })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        dominio: 'UP001AA',
+        color: 'Verde',
+        numeroChasis: 'NEWCHASIS',
+      });
+    });
+
+    it('should reassign owner when cuitDueno changes', async () => {
+      const oldOwner = await createSujeto(dataSource, {
+        cuit: '20123456786',
+        denominacion: 'Old Owner',
+      });
+      const newOwner = await createSujeto(dataSource, {
+        cuit: '27123456780',
+        denominacion: 'New Owner',
+      });
+      const auto = await createAutomotor(dataSource, { dominio: 'RO001AA' });
+      await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: oldOwner.id });
+
+      const response = await request(server)
+        .put('/automotores/RO001AA')
+        .send({
+          cuitDueno: '27123456780',
+        })
+        .expect(200);
+
+      expect(response.body.duenoActual).toMatchObject({
+        cuit: '27123456780',
+        denominacion: 'New Owner',
+      });
+    });
+
+    it('should return 404 when vehicle does not exist', async () => {
+      const response = await request(server)
+        .put('/automotores/NOTEXIST')
+        .send({ color: 'Rojo' })
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        errorCode: 'AUTOMOTOR_NOT_FOUND',
+      });
+    });
+
+    it('should return 404 when new owner does not exist', async () => {
+      const sujeto = await createSujeto(dataSource, { cuit: '20123456786' });
+      const auto = await createAutomotor(dataSource, { dominio: 'NO001OW' });
+      await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: sujeto.id });
+
+      const response = await request(server)
+        .put('/automotores/NO001OW')
+        .send({ cuitDueno: '27123456780' })
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        errorCode: 'SUJETO_NOT_FOUND',
+      });
+    });
+  });
+
+  describe('DELETE /automotores/:dominio', () => {
+    beforeEach(async () => {
+      await clearAllTables(dataSource);
+    });
+
+    it('should delete vehicle and return 204', async () => {
+      await createAutomotor(dataSource, { dominio: 'DL001AA' });
+
+      await request(server).delete('/automotores/DL001AA').expect(204);
+
+      // Verify it's deleted
+      await request(server).get('/automotores/DL001AA').expect(404);
+    });
+
+    it('should delete vehicle with owner (cascade)', async () => {
+      const sujeto = await createSujeto(dataSource, { cuit: '20123456786' });
+      const auto = await createAutomotor(dataSource, { dominio: 'DC001AA' });
+      await createVinculo(dataSource, { ovpId: auto.ovpId, spoId: sujeto.id });
+
+      await request(server).delete('/automotores/DC001AA').expect(204);
+
+      // Verify vehicle is deleted
+      await request(server).get('/automotores/DC001AA').expect(404);
+
+      // Verify sujeto still exists
+      const sujetos = await dataSource.getRepository(Sujeto).find();
+      expect(sujetos).toHaveLength(1);
+    });
+
+    it('should return 404 when vehicle does not exist', async () => {
+      const response = await request(server)
+        .delete('/automotores/NOTEXIST')
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        errorCode: 'AUTOMOTOR_NOT_FOUND',
+      });
     });
   });
 });
