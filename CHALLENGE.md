@@ -19,7 +19,6 @@
 Migrar el formulario Oracle Forms provisto (XML) a una API **NestJS + TypeORM** con **Postgres**, preservando validaciones y reglas de negocio. Armar un **Front Angular** simple para alta, listado, edición y baja del automotor con su **dueño por CUIT**.
 
 > Bonus de actitud: contanos tus decisiones, trade-offs y cómo validarías.
-> 
 
 ---
 
@@ -28,43 +27,41 @@ Migrar el formulario Oracle Forms provisto (XML) a una API **NestJS + TypeORM** 
 ### 🔧 Backend (NestJS)
 
 - **Modelo** según SQL (ver “Archivos”):
-    
-    `Automotores → Objeto_De_Valor → Vinculo_Sujeto_Objeto → Sujeto`.
-    
+  `Automotores → Objeto_De_Valor → Vinculo_Sujeto_Objeto → Sujeto`.
 - **Validaciones (server):**
-    - **Dominio**: `AAA999` o `AA999AA`.
-    - **CUIT**: dígito verificador (módulo 11).
-    - **Fecha fabricación (YYYYMM)**: 6 dígitos, mes 1..12, no futuro.
-    - **Owner único** activo por automotor (cerrar anterior al reasignar).
+  - **Dominio**: `AAA999` o `AA999AA`.
+  - **CUIT**: dígito verificador (módulo 11).
+  - **Fecha fabricación (YYYYMM)**: 6 dígitos, mes 1..12, no futuro.
+  - **Owner único** activo por automotor (cerrar anterior al reasignar).
 - **Endpoints (`/api`)**:
-    - `GET /automotores` → lista + dueño actual.
-    - `GET /automotores/:dominio` → detalle + dueño actual.
-    - `POST /automotores` → alta + asignación de dueño por CUIT (valida todo).
-    - `PUT /automotores/:dominio` → actualizar datos y/o cambiar dueño.
-    - `DELETE /automotores/:dominio` → elimina automotor y su objeto (cascade).
-    - `GET /sujetos/by-cuit?cuit=` → obtener sujeto por CUIT.
-    - `POST /sujetos` → crear sujeto (CUIT válido + denominación).
+  - `GET /automotores` → lista + dueño actual.
+  - `GET /automotores/:dominio` → detalle + dueño actual.
+  - `POST /automotores` → alta + asignación de dueño por CUIT (valida todo).
+  - `PUT /automotores/:dominio` → actualizar datos y/o cambiar dueño.
+  - `DELETE /automotores/:dominio` → elimina automotor y su objeto (cascade).
+  - `GET /sujetos/by-cuit?cuit=` → obtener sujeto por CUIT.
+  - `POST /sujetos` → crear sujeto (CUIT válido + denominación).
 - **Errores**: usar `422 Unprocessable Entity` para reglas de negocio.
 - **Tests**:
-    - Unit: validadores de CUIT, dominio, YYYYMM.
+  - Unit: validadores de CUIT, dominio, YYYYMM.
 
 ### 🖥️ Frontend (Angular)
 
 - **Páginas**:
-    - **Listado** (dominio, dueño, CUIT, fabricación, link “Editar”).
-    - **Formulario** crear/editar:
-        - Campos: dominio, chasis, motor, color, fecha fabricación (YYYYMM), **CUIT dueño**.
-        - Validaciones client-side equivalentes.
-        - Si el CUIT no existe, permitir **crearlo** (prompt/diálogo) y reintentar.
+  - **Listado** (dominio, dueño, CUIT, fabricación, link “Editar”).
+  - **Formulario** crear/editar:
+    - Campos: dominio, chasis, motor, color, fecha fabricación (YYYYMM), **CUIT dueño**.
+    - Validaciones client-side equivalentes.
+    - Si el CUIT no existe, permitir **crearlo** (prompt/diálogo) y reintentar.
 - **Flujo**:
-    - Crear/actualizar debe **reasignar** dueño responsable (100%) cuando cambie el CUIT.
+  - Crear/actualizar debe **reasignar** dueño responsable (100%) cuando cambie el CUIT.
 
 ### 🐳 Docker
 
 - `docker-compose.yml` con servicios:
-    - **db**: Postgres 16 (volumen de datos).
-    - **api**: NestJS (build multi-stage, `depends_on` db).
-    - **web**: Angular servido (node).
+  - **db**: Postgres 16 (volumen de datos).
+  - **api**: NestJS (build multi-stage, `depends_on` db).
+  - **web**: Angular servido (node).
 - `Dockerfile` para **api** (y opcionalmente **web**).
 - `.env.example` (puertos, credenciales DB).
 - **README** con one-liner: `docker compose up -d --build` (+ migraciones/seed si aplica).
@@ -77,14 +74,13 @@ Migrar el formulario Oracle Forms provisto (XML) a una API **NestJS + TypeORM** 
 - **Trabajar en distintas ramas**
 - **Commits (Conventional Commits):** `feat(api): validar dominio ...`, `fix(e2e): ...`
 - **Pull Requests:** mínimo **2 PRs** (p. ej. backend/frontend o docker/backend):
-    - Descripción con **qué / por qué / cómo**, pruebas manuales y **trade-offs**.
+  - Descripción con **qué / por qué / cómo**, pruebas manuales y **trade-offs**.
 
 ---
 
 ## 🧠 Mini-desafío de pensamiento: **“¿Y si fueran 500 formularios?”**
 
 > No hace falta implementarlo. Queremos entender como piensas.
-> 
 
 Creá `docs/ESCALABILIDAD.md` con:
 
@@ -112,9 +108,7 @@ Permitido usar **ChatGPT** u otros, siempre que documentes en `docs/IA_ACELERADO
 
 - **XML** del formulario (alta/CRUD + triggers y program unit).
 - **SQL** del esquema base (tablas, índices, vista de apoyo).
-    
-    *(ver al final “Archivos fuente” para copiar/pegar)*
-    
+  _(ver al final “Archivos fuente” para copiar/pegar)_
 
 ---
 
@@ -137,7 +131,7 @@ Permitido usar **ChatGPT** u otros, siempre que documentes en `docs/IA_ACELERADO
 - **Git Workflow** (ramas, PRs, commits, ADR) — 10 pts
 - **Razonamiento/escala (500 formularios)** — 10 pts
 
-**Bonuses (hasta +5):** Seeds mínimas,  Swagger/OpenAPI.
+**Bonuses (hasta +5):** Seeds mínimas, Swagger/OpenAPI.
 
 ---
 
@@ -145,24 +139,24 @@ Permitido usar **ChatGPT** u otros, siempre que documentes en `docs/IA_ACELERADO
 
 - Enviá un mail a **challenge@mindfactory.ar** con el **link al repo público**.
 - Incluí en el README:
-    - Cómo levantar con Docker (api/web/db).
-    - Cómo correr tests.
-    - Endpoints principales y credenciales fake.
+  - Cómo levantar con Docker (api/web/db).
+  - Cómo correr tests.
+  - Endpoints principales y credenciales fake.
 - **Tiempo máximo:** **3 días (72 h)**.
 
 ---
 
 ## ✅ Checklist de aceptación rápida
 
-- [ ]  `docker compose up -d --build` levanta **db**, **api** y **web** con healthchecks.
-- [ ]  `GET /api/automotores` lista con dueño actual.
-- [ ]  `POST /api/automotores` crea/actualiza automotor y asigna dueño (CUIT válido + existente).
-- [ ]  `PUT /api/automotores/:dominio` actualiza y puede reasignar dueño.
-- [ ]  `DELETE /api/automotores/:dominio` elimina en cascada.
-- [ ]  Angular funciona: listar, crear, editar, eliminar; validaciones client-side.
-- [ ]  Tests: validadores.
-- [ ]  Git: **≥2 PRs** con descripción y decisiones; commits claros.
-- [ ]  Docs: `docs/DECISION_LOG.md`, `docs/ESCALABILIDAD.md`, `docs/IA_ACELERADORES.md`.
+- [x] `docker compose up -d --build` levanta **db**, **api** y **web** con healthchecks.
+- [x] `GET /api/automotores` lista con dueño actual.
+- [x] `POST /api/automotores` crea/actualiza automotor y asigna dueño (CUIT válido + existente).
+- [x] `PUT /api/automotores/:dominio` actualiza y puede reasignar dueño.
+- [x] `DELETE /api/automotores/:dominio` elimina en cascada.
+- [ ] Angular funciona: listar, crear, editar, eliminar; validaciones client-side.
+- [x] Tests: validadores.
+- [ ] Git: **≥2 PRs** con descripción y decisiones; commits claros.
+- [ ] Docs: `docs/DECISION_LOG.md`, `docs/ESCALABILIDAD.md`, `docs/IA_ACELERADORES.md`.
 
 ---
 
