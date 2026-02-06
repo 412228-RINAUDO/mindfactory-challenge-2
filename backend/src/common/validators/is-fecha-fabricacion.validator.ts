@@ -35,11 +35,11 @@ export class IsFechaFabricacionConstraint implements ValidatorConstraintInterfac
   }
 }
 
-export function IsFechaFabricacion(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
+export function IsFechaFabricacion(validationOptions?: ValidationOptions): PropertyDecorator {
+  return function (object: object, propertyName: string | symbol): void {
     registerDecorator({
       target: object.constructor,
-      propertyName: propertyName,
+      propertyName: propertyName as string,
       options: validationOptions,
       constraints: [],
       validator: IsFechaFabricacionConstraint,
