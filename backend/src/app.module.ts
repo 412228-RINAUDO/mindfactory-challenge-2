@@ -6,6 +6,7 @@ import { AutomotoresModule } from './modules/automotores/automotores.module';
 import { ObjetosValorModule } from './modules/objetos-valor/objetos-valor.module';
 import { SujetosModule } from './modules/sujetos/sujetos.module';
 import { VinculosModule } from './modules/vinculos/vinculos.module';
+import { SeedModule } from './database/seed/seed.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { VinculosModule } from './modules/vinculos/vinculos.module';
     SujetosModule,
     VinculosModule,
     AutomotoresModule,
+    SeedModule,
   ],
 })
 export class AppModule {}

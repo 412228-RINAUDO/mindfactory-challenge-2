@@ -4,9 +4,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { SnakeCaseInterceptor } from './common/interceptors/snake-case.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { SeedService } from './database/seed/seed.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+
+  const seedService = app.get(SeedService);
+  await seedService.run();
 
   // Global prefix
   app.setGlobalPrefix('api');
