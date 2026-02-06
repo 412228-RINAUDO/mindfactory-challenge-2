@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AutomotoresModule } from './entities/automotores/automotores.module';
-import { ObjetosValorModule } from './entities/objetos-valor/objetos-valor.module';
-import { SujetosModule } from './entities/sujetos/sujetos.module';
-import { VinculosModule } from './entities/vinculos/vinculos.module';
+import { HealthModule } from './health/health.module';
+import { AutomotoresModule } from './modules/automotores/automotores.module';
+import { ObjetosValorModule } from './modules/objetos-valor/objetos-valor.module';
+import { SujetosModule } from './modules/sujetos/sujetos.module';
+import { VinculosModule } from './modules/vinculos/vinculos.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { VinculosModule } from './entities/vinculos/vinculos.module';
         migrations: ['dist/database/migrations/*.js'],
       }),
     }),
+    HealthModule,
     ObjetosValorModule,
     SujetosModule,
     VinculosModule,
