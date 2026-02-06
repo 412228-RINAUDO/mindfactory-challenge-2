@@ -104,20 +104,4 @@ export class AutomotorController {
     return this.automotorService.delete(dominio);
   }
 
-  @Get(':dominio')
-  @ApiOperation({ summary: 'Get vehicle details by license plate' })
-  @ApiParam({
-    name: 'dominio',
-    description: 'Vehicle license plate (e.g., AA123BB)',
-    example: 'AA123BB',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Vehicle details with current owner',
-    type: AutomotorDetailResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Vehicle not found', type: ErrorResponseDto })
-  async findByDominio(@Param('dominio') dominio: string): Promise<AutomotorDetailResponseDto> {
-    return this.automotorService.findByDominio(dominio);
-  }
 }

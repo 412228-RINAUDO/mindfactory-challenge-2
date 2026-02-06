@@ -27,7 +27,7 @@ export class AutomotorService {
     return this.automotorRepository.findAll();
   }
 
-  async findByDominio(dominio: string): Promise<AutomotorDetailResponseDto> {
+  private async getDetailByDominio(dominio: string): Promise<AutomotorDetailResponseDto> {
     const data = await this.automotorRepository.findByDominio(dominio);
 
     if (!data) {
@@ -73,13 +73,10 @@ export class AutomotorService {
     });
 
     // 3. Return full detail
-    return this.findByDominio(dto.dominio);
+    return this.getDetailByDominio(dto.dominio);
   }
 
-  async update(
-    dominio: string,
-    dto: UpdateAutomotorDto,
-  ): Promise<AutomotorDetailResponseDto> {
+  async update(dominio: string, dto: UpdateAutomotorDto): Promise<AutomotorDetailResponseDto> {
     // 1. Verify automotor exists
     const existingAutomotor = await this.automotorRepository.findByDominio(dominio);
     if (!existingAutomotor) {
@@ -119,16 +116,12 @@ export class AutomotorService {
       // 3.2 Reassign owner only if CUIT actually changed
       const currentOwnerCuit = existingAutomotor.duenoCuit;
       if (newOwner && newOwner.cuit !== currentOwnerCuit) {
-        await this.vinculoService.reassignOwner(
-          existingAutomotor.ovpId,
-          newOwner.id,
-          manager,
-        );
+        await this.vinculoService.reassignOwner(existingAutomotor.ovpId, newOwner.id, manager);
       }
     });
 
     // 4. Return updated detail
-    return this.findByDominio(dominio);
+    return this.getDetailByDominio(dominio);
   }
 
   async delete(dominio: string): Promise<void> {
