@@ -1,0 +1,19 @@
+<div class="p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold">Automotores</h1>
+    <p-button
+      label="Nuevo Automotor"
+      icon="pi pi-plus"
+      (onClick)="onCreate()"
+    />
+  </div>
+
+  <app-automotor-list
+    [automotores]="automotorState.automotores()"
+    [loading]="automotorState.loading()"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event)"
+  />
+
+  <p-confirmdialog />
+</div>
