@@ -88,11 +88,7 @@ export class AutomotorRepository implements IAutomotorRepository {
     }
   }
 
-  async update(
-    dominio: string,
-    data: UpdateAutomotorData,
-    manager: EntityManager,
-  ): Promise<void> {
+  async update(dominio: string, data: UpdateAutomotorData, manager: EntityManager): Promise<void> {
     const updateData: Partial<Automotor> = {};
 
     if (data.numeroChasis !== undefined) {
