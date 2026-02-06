@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    platform: linux/amd64
     container_name: automotores_db
     restart: unless-stopped
     environment:
@@ -18,6 +19,7 @@ services:
       retries: 5
 
   api:
+    platform: linux/amd64
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -44,6 +46,7 @@ services:
       retries: 5
 
   web:
+    platform: linux/amd64
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -62,6 +65,7 @@ services:
 
   adminer:
     image: adminer:latest
+    platform: linux/amd64
     container_name: automotores_adminer
     restart: unless-stopped
     ports:
